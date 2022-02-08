@@ -29,9 +29,9 @@ export const fetchData = (account) => {
         .getState()
         .blockchain.smartContract.methods.name()
         .call();        
-      let totalSupply = await store
+      let balanceof = await store
         .getState()
-        .blockchain.smartContract.methods.totalSupply()
+        .blockchain.smartContract.methods.balanceOf(account)
         .call();         
       let pendingReward = await store
         .getState()
@@ -45,7 +45,7 @@ export const fetchData = (account) => {
         .getState()
         .blockchain.stakingContract.methods.getUserInfo(account)
         .call();
-      //console.log(userInfo[0])
+      console.log(userInfo)
       let isValidator = await store
         .getState()
         .blockchain.stakingContract.methods.isValidator(account)
@@ -68,7 +68,7 @@ export const fetchData = (account) => {
       dispatch(
         fetchDataSuccess({
           name,
-          totalSupply,
+          balanceof,
           pendingReward,
           allStakedAmount,
           userInfo,

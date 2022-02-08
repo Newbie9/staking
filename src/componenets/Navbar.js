@@ -1,7 +1,7 @@
-import React, {useState, useEffect}  from 'react'
-import {Box, HStack, Image} from '@chakra-ui/react'
+import React, { useState, useEffect } from 'react'
+import { Box, HStack, Image, Flex, Spacer } from '@chakra-ui/react'
 import Logo from "../assets/images/website_logo.png"
-import {FaTwitter, FaTelegramPlane, FaDiscord} from "react-icons/fa"
+import { FaTwitter, FaTelegramPlane, FaDiscord } from "react-icons/fa"
 import { Icon } from '@chakra-ui/icons';
 
 
@@ -14,11 +14,11 @@ function Navbar() {
 
     const showButton = () => {
         if (window.innerWidth <= 960) {
-          setButton(false);
+            setButton(false);
         } else {
-          setButton(true);
+            setButton(true);
         }
-      };
+    };
 
     useEffect(() => {
         showButton();
@@ -28,22 +28,16 @@ function Navbar() {
 
     return (
         <div>
-            <HStack
-                bg='orange.300'
-                w='99vw'
+            <Flex
+                bg='yellow.500'
+                w='100%'
                 h='16vh'
                 spacing='auto'
-                pr='15vw'
-                bg='#ffaa00'
-            >  
-                <a href="https://avaxfoxes.com/" >          
-                <Image
-                    src={Logo}
-                    ml='3vw'               
-                    h='9vh'  
-                />
-                </a>
-                <HStack>
+                
+                
+            >
+                <Spacer />
+                <HStack >
                     <Box
                         align='center'
                         w='4vw'
@@ -51,7 +45,7 @@ function Navbar() {
                         fontWeight='semibold'
                         p='3'
                         borderRadius='xl'
-                        _hover={{borderRadius:'xl', fontSize: '4xl'}}         
+                        _hover={{ borderRadius: 'xl', fontSize: '4xl' }}
                     >
                         <a href='https://avaxfoxes.com/'>
                             <Icon as={FaTwitter} />
@@ -64,7 +58,7 @@ function Navbar() {
                         fontWeight='semibold'
                         p='3'
                         borderRadius='xl'
-                        _hover={{borderRadius:'xl', fontSize: '4xl'}}         
+                        _hover={{ borderRadius: 'xl', fontSize: '4xl' }}
                     >
                         <a href='https://avaxfoxes.com/'>
                             <Icon as={FaTelegramPlane} />
@@ -77,14 +71,15 @@ function Navbar() {
                         fontWeight='semibold'
                         p='3'
                         borderRadius='xl'
-                        _hover={{borderRadius:'xl', fontSize: '4xl'}}         
+                        _hover={{ borderRadius: 'xl', fontSize: '4xl' }}
                     >
                         <a href='https://avaxfoxes.com/'>
                             <Icon as={FaDiscord} />
                         </a>
                     </Box>
-                </HStack>                   
-            </HStack>
+                </HStack>
+            </Flex>
+
         </div>
     )
 }

@@ -1,7 +1,7 @@
 const initialState = {
   loading: false,
   name: "",
-  totalSupply: 0,
+  balanceof: 0,
   pendingReward: 0,
   allStakedAmount: 0,
   userInfo: null,
@@ -26,7 +26,7 @@ const dataReducer = (state = initialState, action) => {
         ...state,
         loading: false,
         name: action.payload.name,
-        totalSupply: action.payload.totalSupply,
+        balanceof: action.payload.balanceof,
         pendingReward: action.payload.pendingReward,
         allStakedAmount: action.payload.allStakedAmount,
         userInfo: action.payload.userInfo,
