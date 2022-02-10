@@ -1,6 +1,5 @@
-import { initializeApp } from "@firebase/app";
-import { getAnalytics } from "@firebase/analytics";
-import { getStorage } from "@firebase/storage";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
     apiKey: "AIzaSyAJF4usMCpod-bH00Tw211jj3DHtu8opJI",
     authDomain: "staking-2a1ce.firebaseapp.com",
@@ -11,6 +10,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const storage = getStorage(app);
-export default storage;
+const db = getFirestore(app);
+
+export default db;

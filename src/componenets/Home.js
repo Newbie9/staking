@@ -4,17 +4,30 @@ import { connect } from "../redux/blockchain/blockchainActions";
 import { fetchData } from "../redux/data/dataActions";
 import { Box, Container, Text, Spacer, VStack, HStack, Button, Center, Flex, Image, Input } from "@chakra-ui/react";
 import Navbar from "./Navbar";
-
+import db from '../firebase.js';
+import { collection, addDoc } from "firebase/firestore"; 
 
 function Home() {
   const dispatch = useDispatch();
   const blockchain = useSelector((state) => state.blockchain);
-  const data = useSelector((state) => state.data);
-  const [feedback, setFeedback] = useState("Maybe it's your lucky day.");
-  const [claimingNft, setClaimingNft] = useState(false);
-  const [amount, setAmount] = useState(1);
+  const data = useSelector((state) => state.data);    
   const [stakingAmount, setstakingAmount] = useState(0);
   const handleChange = event => setstakingAmount(event.target.value);
+
+  
+
+    useEffect(() => {
+        
+            addDoc(collection(db, "users"), {
+              first: "Ada",
+              last: "Lovelace",
+              born: 1815
+            }).then((response)=>{
+                console.log(response)
+              })
+            
+          
+    }, []);
 
 
   const getData = () => {
