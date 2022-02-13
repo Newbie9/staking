@@ -4,30 +4,44 @@ import { connect } from "../redux/blockchain/blockchainActions";
 import { fetchData } from "../redux/data/dataActions";
 import { Box, Container, Text, Spacer, VStack, HStack, Button, Center, Flex, Image, Input } from "@chakra-ui/react";
 import Navbar from "./Navbar";
-import db from '../firebase.js';
-import { collection, addDoc } from "firebase/firestore"; 
+import app from '../firebase.js';
+import { collection, addDoc, setDoc, doc, getDoc } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 function Home() {
   const dispatch = useDispatch();
   const blockchain = useSelector((state) => state.blockchain);
-  const data = useSelector((state) => state.data);    
+  const data = useSelector((state) => state.data);
   const [stakingAmount, setstakingAmount] = useState(0);
   const handleChange = event => setstakingAmount(event.target.value);
 
-  
+  const [EnodeAdress, setEnodeAdress] = useState("");
+  const handleChangeEnodeAdress = event => setEnodeAdress(event.target.value);
+  const [usersRequest, setusersRequest] = useState({});
 
-    useEffect(() => {
-        
-            addDoc(collection(db, "users"), {
-              first: "Ada",
-              last: "Lovelace",
-              born: 1815
-            }).then((response)=>{
-                console.log(response)
-              })
-            
-          
-    }, []);
+
+  const db = getFirestore(app);
+
+  useEffect(() => {
+
+
+  }, []);
+
+  const validatorApply = () => {
+    if (blockchain.account !== "" && blockchain.smartContract !== null) {
+      setDoc(doc(db, "requests", blockchain.account), {
+        adress: blockchain.account,
+        enodeAdress: EnodeAdress,
+      }).then((response) => {
+        console.log(response)
+      })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    }
+  };
 
 
   const getData = () => {
@@ -84,13 +98,25 @@ function Home() {
 
 
   useEffect(() => {
-    getData();
+    if (blockchain.account != null) {
+      getData();
+      const docRef = doc(db, "requests", blockchain.account);
+      getDoc(docRef)
+        .then((snap) => {
+          if(snap.exists()){
+            setusersRequest(snap.data());
+            console.log(snap.data())
+          }
+                    
+        });
+    }
+
   }, [blockchain.account]);
 
 
   return (
     <div>
-      <Navbar />
+
       <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, gray.700)' >
         <HStack w='100%' h='30vh' mx={'5vw'} px={'5vw'} mt={'8%'}>
           <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
@@ -145,7 +171,7 @@ function Home() {
           </Box>
           <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
             <VStack alignItems={'center'} mt='4%'>
-              {blockchain.account === "" || blockchain.smartContract === null || data.userInfo===null ? (
+              {blockchain.account === "" || blockchain.smartContract === null || data.userInfo === null ? (
                 <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
                   onClick={() => {
                     dispatch(connect())
@@ -175,8 +201,29 @@ function Home() {
             </VStack>
           </Box>
         </HStack>
+        <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
+          <VStack alignItems={'center'} mt='4%'>
 
 
+            <Input value={EnodeAdress} onChange={handleChangeEnodeAdress} placeholder="Enode Adress" size="sm" borderRadius='20' bg='white.200' w={'30%'} x />
+
+
+            <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
+              onClick={() => {
+                validatorApply()
+              }}>
+              Apply to be a Validator
+            </Button>
+          </VStack>
+        </Box>
+        { !(Object.keys(usersRequest).length === 0) ? (
+          <Text style={{ textAlign: "center" }}>  <strong>{usersRequest.adress} </strong>: {usersRequest.enodeAdress} </Text> 
+          
+        ):( 
+          null         
+        )
+        }
+        
       </VStack>
     </div>
   );

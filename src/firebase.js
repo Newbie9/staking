@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+
 const firebaseConfig = {
     apiKey: "AIzaSyAJF4usMCpod-bH00Tw211jj3DHtu8opJI",
     authDomain: "staking-2a1ce.firebaseapp.com",
@@ -10,6 +10,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-export default db;
+
+export default app;
