@@ -71,7 +71,7 @@ export const connect = () => {
             //SmartContract.abi,
             //NetworkData.address            
             StakingContract.abi,
-            "0x06bF00a9e9c7721CF0EeDB3dd80dfF2a6E678e11"
+            "0xfefAB0908094fA803Dc64043176Ef54d6CB96FB8"
           );
           console.log(StakingContractObj);
           dispatch(

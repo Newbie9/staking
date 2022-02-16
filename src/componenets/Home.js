@@ -22,9 +22,9 @@ function Home() {
 
 
   const db = getFirestore(app);
+  var triedConnect = false;
 
   useEffect(() => {
-
 
   }, []);
 
@@ -33,6 +33,7 @@ function Home() {
       setDoc(doc(db, "requests", blockchain.account), {
         adress: blockchain.account,
         enodeAdress: EnodeAdress,
+        status: "pending"
       }).then((response) => {
         console.log(response)
       })
@@ -53,7 +54,7 @@ function Home() {
     //console.log(blockchain.stakingContract.address)
 
     blockchain.smartContract.methods
-      .approve("0x06bF00a9e9c7721CF0EeDB3dd80dfF2a6E678e11", 1e12)
+      .approve("0xfefAB0908094fA803Dc64043176Ef54d6CB96FB8", 1e12)
       .send({
         to: blockchain.smartContract.address, // Smart Contract Adress
         from: blockchain.account,
@@ -99,19 +100,29 @@ function Home() {
 
   useEffect(() => {
     if (blockchain.account != null) {
-      getData();
       const docRef = doc(db, "requests", blockchain.account);
       getDoc(docRef)
         .then((snap) => {
-          if(snap.exists()){
+          if (snap.exists()) {
             setusersRequest(snap.data());
             console.log(snap.data())
           }
-                    
+
         });
     }
 
   }, [blockchain.account]);
+
+  useEffect(() => {
+    if (blockchain.account !== "" && blockchain.smartContract !== null) {
+      getData();
+    } else {
+      if (!triedConnect) {
+        triedConnect = true;
+        dispatch(connect())
+      }
+    }
+  }, [blockchain.smartContract, blockchain.account]);
 
 
   return (
@@ -167,6 +178,12 @@ function Home() {
                 }}>
                 withdrawRewards
               </Button>
+              <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
+                onClick={() => {
+                  withdrawStake()
+                }}>
+                withdrawStake
+              </Button>
             </VStack>
           </Box>
           <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
@@ -203,27 +220,32 @@ function Home() {
         </HStack>
         <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
           <VStack alignItems={'center'} mt='4%'>
+            {!(Object.keys(usersRequest).length === 0) ? (
+              <div>
+                <Text style={{ textAlign: "center" }}>  <strong>You have a request! </strong> </Text>
+                <Text style={{ textAlign: "center" }}>  <strong>{usersRequest.adress} </strong> </Text>
+                <Text style={{ textAlign: "center" }}>  {usersRequest.enodeAdress} </Text>
+                <Text style={{ textAlign: "center" }}>  <strong> Status:</strong> <strong>{usersRequest.status} </strong></Text>
+              </div>
+            ) : (
+              <div>
+                <Input value={EnodeAdress} onChange={handleChangeEnodeAdress} placeholder="Enode Adress" size="sm" borderRadius='20' bg='white.200' w={'30%'} x />
+
+                <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
+                  onClick={() => {
+                    validatorApply()
+                  }}>
+                  Apply to be a Validator
+                </Button>
+              </div>
+            )
+            }
 
 
-            <Input value={EnodeAdress} onChange={handleChangeEnodeAdress} placeholder="Enode Adress" size="sm" borderRadius='20' bg='white.200' w={'30%'} x />
-
-
-            <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
-              onClick={() => {
-                validatorApply()
-              }}>
-              Apply to be a Validator
-            </Button>
           </VStack>
         </Box>
-        { !(Object.keys(usersRequest).length === 0) ? (
-          <Text style={{ textAlign: "center" }}>  <strong>{usersRequest.adress} </strong>: {usersRequest.enodeAdress} </Text> 
-          
-        ):( 
-          null         
-        )
-        }
-        
+
+
       </VStack>
     </div>
   );
