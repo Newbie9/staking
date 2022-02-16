@@ -679,6 +679,7 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     address public sharedWallet;
     mapping (address => UserInfo) public userInfo;
     mapping (address => bool) public isValidator;
+    mapping (address => bool) public canStake;
 
     event PoolReplenished(uint256 amount);
     event TokensStaked(address indexed user, uint256 amount, uint256 reward, bool reinvest);
@@ -784,7 +785,9 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     }
 
     function stakeTokens(uint256 _amountToStake, bool validator) external nonReentrant onlyWhitelisted{
-        
+        if(validator){
+            require(canStake[msg.sender],"You are not able to stake now, please make a request to be validator");
+        }
         innerStakeTokens(_amountToStake, validator, false);
     }
 
@@ -904,6 +907,10 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         //rewardToken.safeTransfer(msg.sender, returnAmount);
         payable(msg.sender).transfer(returnAmount);
         emit WithdrawPoolRemainder(msg.sender, returnAmount);
+    }
+
+    function defineValidator(address user, bool value) external onlyOwner nonReentrant{
+        canStake[user]=value;
     }
     /*
     function extendDuration(uint256 _addTokenAmount) external onlyOwner nonReentrant{
