@@ -61,17 +61,19 @@ export const connect = () => {
         const chainId = await ethereum.request({ method: 'eth_chainId' });
         console.log(chainId);
         if (chainId=="0x4de") {       //0xa86a mainnetin chain id'si, 0xa869 fuji netin chain idsi
+          const tokenContractAdress = "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd";
+          const stakingContractAdress = "0x49531507C026E2873a3e3aA61fAdB28853f4Dc21";
           const TokenContractObj = new Web3EthContract(
             //SmartContract.abi,
             //NetworkData.address            
             TokenContract.abi,
-            "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd"
+            tokenContractAdress
           );
           const StakingContractObj = new Web3EthContract(
             //SmartContract.abi,
             //NetworkData.address            
             StakingContract.abi,
-            "0xfefAB0908094fA803Dc64043176Ef54d6CB96FB8"
+            stakingContractAdress
           );
           console.log(StakingContractObj);
           dispatch(
@@ -79,6 +81,8 @@ export const connect = () => {
               account: accounts[0],
               smartContract: TokenContractObj,
               stakingContract: StakingContractObj,
+              tokenContractAdress:tokenContractAdress,
+              stakingContractAdress: stakingContractAdress,
               web3: web3,
             })
           );

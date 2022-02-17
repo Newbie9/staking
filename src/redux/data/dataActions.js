@@ -50,8 +50,16 @@ export const fetchData = (account) => {
         .getState()
         .blockchain.stakingContract.methods.isValidator(account)
         .call();
+      let multiplier = await store
+        .getState()
+        .blockchain.stakingContract.methods.validatorBonusMultiplier()
+        .call();
+      
+      
+
       if(isValidator){
         isValidator = "True";
+        userInfo[0]=userInfo[0]*10/multiplier;
       }else{
         isValidator = "False";
       }
@@ -64,6 +72,7 @@ export const fetchData = (account) => {
         .getState()
         .blockchain.stakingContract.methods.sharedWalletStakedAmount()
         .call();
+      allStakedAmount=parseInt((allStakedAmount-sharedWalletStakedAmount)*10/multiplier) +parseInt(sharedWalletStakedAmount);
 
       dispatch(
         fetchDataSuccess({

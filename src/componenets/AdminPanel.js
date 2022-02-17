@@ -26,85 +26,29 @@ function AdminPanel() {
 
 
     const getRequestsData = () => {
-        signInWithEmailAndPassword(auth, id, password)
-            .then((userCredential) => {
-                // Signed in 
-                const user = userCredential.user;
-                console.log(user)          // ...
-                getDocs(collection(db, "requests"))
-                    .then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => {
-                            checkUserStatus(doc.id)
-                            setrequests((prevState) => [
-                                ...prevState,
-                                { adress: doc.id, enodeAdress: doc.data().enodeAdress, status: doc.data().status },
-                            ]);
-                            console.log(doc.id, " => ", doc.data().enodeAdress);
-
-                        });
-                    });
-
-
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-            });
+        if (blockchain.account != null) {
+        setrequests([]);
+        blockchain.stakingContract.methods.getRequestsLength().call()
+        .then((length)=>{
+            console.log(length)
+            for(let i=0;i<length;i++){
+                blockchain.stakingContract.methods.validators(i).call()
+                .then((request)=>{
+                    setrequests((prevState) => [
+                        ...prevState,
+                        { adress: request.user, enodeAdress: request.enodeAdress, status: request.status },
+                    ]);
+                })
+            }    
+        })
+        }
     };
-
-    const checkUserStatus = (userAdress) => {
-        blockchain.stakingContract.methods.isValidator(userAdress).call()
-        .then((isvalidator) => {
-            if(isvalidator){
-                console.log(getUserStatus(userAdress))
-            }else{
-                console.log(getUserStatus(userAdress))
-            }
-        })      
-    }
-    const getUserStatus = (userAdress) => {
-        const docRef = doc(db, "requests", blockchain.account);
-        getDoc(docRef)
-        .then((snap) => {
-          if (snap.exists()) {
-            return snap.data().status;
-          }
-
-        });
-    }
-    const changeUserStatus = (userAdress, status) => {
-        signInWithEmailAndPassword(auth, id, password)
-            .then((userCredential) => {
-                const docRef = doc(db, "requests", userAdress);
-                getDoc(docRef)
-                    .then((snap) => {
-                        if (snap.exists()) {
-                            setDoc(doc(db, "requests", userAdress), {
-                                adress: snap.data().adress,
-                                enodeAdress: snap.data().enodeAdress,
-                                status: status
-                            }).then((response) => {
-                                console.log(response)
-                            })
-                                .catch((error) => {
-                                    const errorCode = error.code;
-                                    const errorMessage = error.message;
-                                });
-                        }
-                    });
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-            });
-
-    }
-
+    
     const approveValidator = (userAdress) => {
         //console.log(userAdress) 
         if (blockchain.account != null) {
             blockchain.stakingContract.methods
-                .defineValidator(userAdress, false)
+                .defineValidator(userAdress, true)
                 .send({
                     to: blockchain.stakingContract.address, // Smart Contract Adress
                     from: blockchain.account,
@@ -113,7 +57,7 @@ function AdminPanel() {
                     console.log(err);
                 })
                 .then((receipt) => {
-                    changeUserStatus(userAdress,'approved to stake')
+                    //changeUserStatus(userAdress,'approved to stake')
                 });
 
         } else {
@@ -133,6 +77,7 @@ function AdminPanel() {
     useEffect(() => {
         if (blockchain.account !== "" && blockchain.smartContract !== null) {
             getData();
+            getRequestsData();
         } else {
             if (!triedConnect) {
                 triedConnect = true;
@@ -146,25 +91,7 @@ function AdminPanel() {
         <div>
 
             <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, gray.700)' >
-                <HStack w='100%' h='30vh' mx={'5vw'} px={'5vw'} mt={'8%'}>
-                    <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
-                        <VStack alignItems={'center'} mt='4%'>
-                            <Input value={id} onChange={handleChangeid} placeholder="id" size="sm" borderRadius='20' bg='white.200' w={'50%'} x />
-                            <Input value={password} onChange={handleChangepassword} placeholder="password" size="sm" borderRadius='20' bg='white.200' w={'50%'} x />
-
-                            <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
-                                onClick={() => {
-                                    getRequestsData();
-                                }}>
-                                login
-                            </Button>
-                        </VStack>
-
-                    </Box>
-
-
-                </HStack>
-
+                
                 {requests.map((usersRequest, index) => {
 
                     return (
@@ -176,7 +103,7 @@ function AdminPanel() {
                                 onClick={() => {
                                     approveValidator(usersRequest.adress);
                                 }}>
-                                approve
+                                EnableToStake
                             </Button>
                         </VStack>
                     );

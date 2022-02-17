@@ -21,28 +21,7 @@ function Home() {
   const [usersRequest, setusersRequest] = useState({});
 
 
-  const db = getFirestore(app);
-  var triedConnect = false;
-
-  useEffect(() => {
-
-  }, []);
-
-  const validatorApply = () => {
-    if (blockchain.account !== "" && blockchain.smartContract !== null) {
-      setDoc(doc(db, "requests", blockchain.account), {
-        adress: blockchain.account,
-        enodeAdress: EnodeAdress,
-        status: "pending"
-      }).then((response) => {
-        console.log(response)
-      })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-        });
-    }
-  };
+  var triedConnect = false; 
 
 
   const getData = () => {
@@ -50,11 +29,21 @@ function Home() {
       dispatch(fetchData(blockchain.account));
     }
   };
+
+  const validatorApply = () => {
+    //console.log(blockchain.stakingContract.address)
+    blockchain.stakingContract.methods
+      .addRequest(EnodeAdress)
+      .send({
+        to: blockchain.smartContract.address, // Smart Contract Adress
+        from: blockchain.account,
+      })
+  };
   const approveStaking = () => {
     //console.log(blockchain.stakingContract.address)
 
     blockchain.smartContract.methods
-      .approve("0xfefAB0908094fA803Dc64043176Ef54d6CB96FB8", 1e12)
+      .approve(blockchain.stakingContractAdress, 1e12)
       .send({
         to: blockchain.smartContract.address, // Smart Contract Adress
         from: blockchain.account,
@@ -81,7 +70,7 @@ function Home() {
   const withdrawStake = () => {
     //console.log(blockchain.account)
     blockchain.stakingContract.methods
-      .withdrawStake(data.userInfo[0])
+      .withdrawStake()
       .send({
         to: blockchain.stakingContract.address, // Smart Contract Adress
         from: blockchain.account,
@@ -100,18 +89,19 @@ function Home() {
 
   useEffect(() => {
     if (blockchain.account != null) {
-      const docRef = doc(db, "requests", blockchain.account);
-      getDoc(docRef)
-        .then((snap) => {
-          if (snap.exists()) {
-            setusersRequest(snap.data());
-            console.log(snap.data())
-          }
-
-        });
+      blockchain.stakingContract.methods.userInfo(blockchain.account).call()
+      .then((userinfo)=>{
+        if(userinfo.maderequest){
+          blockchain.stakingContract.methods.validators(userinfo.index).call()
+          .then((request)=>{
+            setusersRequest({ adress: request.user, enodeAdress: request.enodeAdress, status: request.status });
+          })
+        }        
+      })
+      
     }
 
-  }, [blockchain.account]);
+  }, [data]);
 
   useEffect(() => {
     if (blockchain.account !== "" && blockchain.smartContract !== null) {

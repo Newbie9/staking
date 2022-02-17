@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+//pragma solidity 0.6.12;
+
+pragma solidity 0.8.7;
 /**
  * @dev Collection of functions related to the address type
  */
@@ -172,16 +174,7 @@ library Address {
  *
  * This contract is only required for intermediate, library-like contracts.
  */
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address payable) {
-        return msg.sender;
-    }
 
-    function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
-        return msg.data;
-    }
-}
 /**
  * @dev Contract module which provides a basic access control mechanism, where
  * there is an account (an owner) that can be granted exclusive access to
@@ -194,7 +187,7 @@ abstract contract Context {
  * `onlyOwner`, which can be applied to your functions to restrict their use to
  * the owner.
  */
-abstract contract Ownable is Context {
+abstract contract Ownable  {
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -203,7 +196,7 @@ abstract contract Ownable is Context {
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
     constructor () internal {
-        address msgSender = _msgSender();
+        address msgSender = msg.sender;
         _owner = msgSender;
         emit OwnershipTransferred(address(0), msgSender);
     }
@@ -219,7 +212,7 @@ abstract contract Ownable is Context {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(_owner == _msgSender(), "Ownable: caller is not the owner");
+        require(_owner == msg.sender, "Ownable: caller is not the owner");
         _;
     }
 
@@ -670,16 +663,20 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     uint256 public participants; //Count of participants
     uint256 public minAmountStake;
     uint256 public sharedWalletStakedAmount;
+    uint256 public validatorBonusMultiplier=15;
     // Info of each user.
     struct UserInfo {
         uint256 amount;     // How many tokens the user has staked.
         uint256 rewardDebt; // Reward debt
         bool registrated;
+        bool maderequest;
+        uint256 index;
     }
     address public sharedWallet;
     mapping (address => UserInfo) public userInfo;
     mapping (address => bool) public isValidator;
     mapping (address => bool) public canStake;
+    
 
     event PoolReplenished(uint256 amount);
     event TokensStaked(address indexed user, uint256 amount, uint256 reward, bool reinvest);
@@ -695,29 +692,55 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         uint256 _startTime,
         uint256 _finishTime,
         uint256 _poolTokenAmount,
-        bool _hasWhitelisting,
-        uint256 _minAmountStake,
-        address _sharedWallet
-    ) public Whitelist(_hasWhitelisting) {
+        //bool _hasWhitelisting,
+        uint256 _minAmountStake
+        //address _sharedWallet
+    ) public Whitelist(false) {
         stakingToken = _stakingToken;
         
         minAmountStake = _minAmountStake.mul(1e2);
-        startTime = now.add(_startTime);        
+        startTime = block.timestamp.add(_startTime);        
         lastRewardTime = startTime;
-        finishTime = now.add(_finishTime);        
+        finishTime = block.timestamp.add(_finishTime);        
         poolTokenAmount = _poolTokenAmount;
-        sharedWallet = _sharedWallet;
+        //sharedWallet = _sharedWallet;
         require(startTime < finishTime, "Start must be less than finish");
-        require(startTime > now, "Start must be more than now");
+        require(startTime > block.timestamp, "Start must be more than now");
 
     }
+    struct ValidatorInfo {
+        address user;     // How many tokens the user has staked.
+        string enodeAdress; // Reward debt
+        string status;
+    }
+    ValidatorInfo[] public validators;
+
+    function addRequest(string memory _enodeAdress) public {       
+        UserInfo storage user = userInfo[msg.sender];
+        require(!user.maderequest);
+        validators.push(ValidatorInfo(msg.sender,_enodeAdress,"pending"));
+        user.maderequest=true;
+        user.index=validators.length-1;
+    }
+    function defineValidator(address user, bool value) external onlyOwner{
+        canStake[user]=value;
+    }
+    function changeStatus(address _user, string memory _status) public onlyOwner {
+        UserInfo storage user = userInfo[_user];        
+        ValidatorInfo storage validator = validators[user.index];
+        validator.status = _status;
+    }
+    function getRequestsLength() public view returns(uint256) {
+        return validators.length;
+    }
+
     // in wei
     function rewardPerSec() internal view returns (uint256)
     {
         
-        if(now<startTime){
+        if(block.timestamp<startTime){
             return 0;
-        }else if(now.sub(startTime)<1111111*15){
+        }else if(block.timestamp.sub(startTime)<1111111*15){
             uint256 tempRPS = 25;
             return tempRPS.mul(1e18).div(15);
         }else{
@@ -756,8 +779,8 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     function pendingReward(address _user) external view returns (uint256) {
         UserInfo storage user = userInfo[_user];
         uint256 tempAccTokensPerShare = accTokensPerShare;
-        if (now > lastRewardTime && allStakedAmount != 0) {
-            uint256 multiplier = getMultiplier(lastRewardTime, now);
+        if (block.timestamp > lastRewardTime && allStakedAmount != 0) {
+            uint256 multiplier = getMultiplier(lastRewardTime, block.timestamp);
             uint256 reward = multiplier.mul(rewardPerSec());
             tempAccTokensPerShare = accTokensPerShare.add(
                 reward.div(allStakedAmount)
@@ -768,20 +791,20 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
 
     // Update reward variables of the given pool to be up-to-date.
     function updatePool() public {
-        if (now <= lastRewardTime) {
+        if (block.timestamp <= lastRewardTime) {
             return;
         }
         if (allStakedAmount == 0) {
-            lastRewardTime = now;
+            lastRewardTime = block.timestamp;
             return;
         }
 
-        uint256 multiplier = getMultiplier(lastRewardTime, now);
+        uint256 multiplier = getMultiplier(lastRewardTime, block.timestamp);
         uint256 reward = multiplier.mul(rewardPerSec());
         accTokensPerShare = accTokensPerShare.add(
             reward.div(allStakedAmount)
         );
-        lastRewardTime = now;
+        lastRewardTime = block.timestamp;
     }
 
     function stakeTokens(uint256 _amountToStake, bool validator) external nonReentrant onlyWhitelisted{
@@ -794,8 +817,8 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     function innerStakeTokens(uint256 _amountToStake, bool validator, bool reinvest) private{
         UserInfo storage user = userInfo[msg.sender];
         require(stakingToken.balanceOf(msg.sender)>=_amountToStake, "Your balance is not enough");
-        if(validator && !(user.amount>0)){
-            require(_amountToStake>=minAmountStake, "Minimum amount to stake condition is not met");
+        if(validator){
+            require(user.amount.add(_amountToStake)>=minAmountStake, "Minimum amount to stake condition is not met");
         }
         updatePool();
         uint256 pending = 0;        
@@ -812,11 +835,16 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
             stakingToken.safeTransferFrom(msg.sender, address(this), _amountToStake);
             uint256 received = stakingToken.balanceOf(address(this)) - balanceBefore;
             _amountToStake = received;
+            if(validator){
+                _amountToStake = _amountToStake.mul(validatorBonusMultiplier).div(10);
+            }
             user.amount = user.amount.add(_amountToStake);
             allStakedAmount = allStakedAmount.add(_amountToStake);
         }
         if(validator && !isValidator[msg.sender]){
             isValidator[msg.sender] = true;
+            ValidatorInfo storage _validator = validators[user.index];
+            _validator.status = "Staked";
         }
         if(!validator && !isValidator[msg.sender]){
             sharedWalletStakedAmount = sharedWalletStakedAmount.add(_amountToStake);
@@ -830,34 +858,42 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
 
     // Leave the pool. Claim back your tokens.
     // Unclocks the staked + gained tokens and burns pool shares
-    function withdrawStake(uint256 _amount) external nonReentrant {
+    function withdrawStake() external nonReentrant {        
         UserInfo storage user = userInfo[msg.sender];
-        require(user.amount >= _amount, "withdraw: not good");
-        updatePool();
-        uint256 pending = transferPendingReward(user);
-
-        if (_amount > 0) {
-            user.amount = user.amount.sub(_amount);
+        uint256 _amount = user.amount;
+        if(isValidator[msg.sender]){            
+            ValidatorInfo storage validator = validators[user.index];
+            validator.status = "Withdrawed Stakes";
+            updatePool();
+            uint256 pending = transferPendingReward(user);
+            isValidator[msg.sender]=false;
+            _amount = _amount.mul(10).div(validatorBonusMultiplier);
+            user.amount = 0;
             stakingToken.safeTransfer(msg.sender, _amount);
-        }
-        allRewardDebt = allRewardDebt.sub(user.rewardDebt);
-        user.rewardDebt = user.amount.mul(accTokensPerShare);
-        allRewardDebt = allRewardDebt.add(user.rewardDebt);
-        allStakedAmount = allStakedAmount.sub(_amount);
-        if(isValidator[msg.sender]){
-            if(user.amount <=minAmountStake){
-                isValidator[msg.sender] = false;
-                sharedWalletStakedAmount = sharedWalletStakedAmount.add(user.amount);
-            }            
-        }
-        else{
+            
+            allRewardDebt = allRewardDebt.sub(user.rewardDebt);
+            user.rewardDebt = user.amount.mul(accTokensPerShare);
+            allRewardDebt = allRewardDebt.add(user.rewardDebt);
+            allStakedAmount = allStakedAmount.sub(_amount.mul(validatorBonusMultiplier).div(10));
+            emit StakeWithdrawn(msg.sender, _amount, pending);
+        }else{
+            updatePool();
+            uint256 pending = transferPendingReward(user);            
+            user.amount = 0;
+            stakingToken.safeTransfer(msg.sender, _amount);            
+            allRewardDebt = allRewardDebt.sub(user.rewardDebt);
+            user.rewardDebt = user.amount.mul(accTokensPerShare);
+            allRewardDebt = allRewardDebt.add(user.rewardDebt);
+            allStakedAmount = allStakedAmount.sub(_amount);
             sharedWalletStakedAmount = sharedWalletStakedAmount.sub(_amount);
-        }
-        emit StakeWithdrawn(msg.sender, _amount, pending);
+            emit StakeWithdrawn(msg.sender, _amount, pending);
+        }     
+        
+        
     }
 
     function transferPendingReward(UserInfo memory user) private returns (uint256) {
-        uint256 pending = user.amount.mul(accTokensPerShare).sub(user.rewardDebt);
+        uint256 pending = user.amount.mul(accTokensPerShare).sub(user.rewardDebt);        
 
         if (pending > 0) {            
             //rewardToken.safeTransfer(msg.sender, pending);
@@ -898,7 +934,7 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         stakingToken.safeTransferFrom(address(this), msg.sender,  stakingToken.balanceOf(address(this)));
     }
     function withdrawPoolRemainder() external onlyOwner nonReentrant{
-        require(now > finishTime, "Allow after finish");
+        require(block.timestamp > finishTime, "Allow after finish");
         updatePool();
         uint256 pending = allStakedAmount.mul(accTokensPerShare).sub(allRewardDebt);
         uint256 returnAmount = poolTokenAmount.sub(allPaidReward).sub(pending);
@@ -909,9 +945,7 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         emit WithdrawPoolRemainder(msg.sender, returnAmount);
     }
 
-    function defineValidator(address user, bool value) external onlyOwner nonReentrant{
-        canStake[user]=value;
-    }
+    
     /*
     function extendDuration(uint256 _addTokenAmount) external onlyOwner nonReentrant{
         require(now < finishTime, "Pool was finished");
