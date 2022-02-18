@@ -722,8 +722,16 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         user.maderequest=true;
         user.index=validators.length-1;
     }
-    function defineValidator(address user, bool value) external onlyOwner{
-        canStake[user]=value;
+    function defineValidator(address _user, bool value) external onlyOwner{
+        canStake[_user]=value;
+        UserInfo storage user = userInfo[_user];        
+        ValidatorInfo storage validator = validators[user.index];
+        if(value){
+            validator.status = "approved";
+        }else{
+            validator.status = "denied";
+        }
+        
     }
     function changeStatus(address _user, string memory _status) public onlyOwner {
         UserInfo storage user = userInfo[_user];        
@@ -732,6 +740,17 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     }
     function getRequestsLength() public view returns(uint256) {
         return validators.length;
+    }
+    function deleteRequest(address _user) public onlyOwner {        
+        
+        UserInfo storage user = userInfo[_user];               
+        ValidatorInfo storage lastvalidator = validators[validators.length-1];
+        validators[user.index] = lastvalidator;
+        UserInfo storage lastValidatorUser = userInfo[lastvalidator.user]; 
+        lastValidatorUser.index = user.index;
+        user.index=0;
+        user.maderequest = false;
+        validators.pop();        
     }
 
     // in wei
@@ -890,6 +909,42 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         }     
         
         
+    }
+
+    function removeValidator(address _validator) external onlyOwner{
+        UserInfo storage user = userInfo[_validator];
+        uint256 _amount = user.amount;
+        if(isValidator[_validator]){            
+            ValidatorInfo storage validator = validators[user.index];
+            validator.status = "Removed";
+            updatePool();
+            uint256 pending = transferPendingReward(user);
+            isValidator[_validator]=false;
+            _amount = _amount.mul(10).div(validatorBonusMultiplier);
+            user.amount = 0;
+            stakingToken.safeTransfer(_validator, _amount);
+            
+            
+            canStake[_validator]=false;
+
+            allRewardDebt = allRewardDebt.sub(user.rewardDebt);
+            user.rewardDebt = user.amount.mul(accTokensPerShare);
+            allRewardDebt = allRewardDebt.add(user.rewardDebt);
+            allStakedAmount = allStakedAmount.sub(_amount.mul(validatorBonusMultiplier).div(10));
+            emit StakeWithdrawn(_validator, _amount, pending);
+        }else{
+            updatePool();
+            uint256 pending = transferPendingReward(user);            
+            user.amount = 0;
+            stakingToken.safeTransfer(_validator, _amount);            
+            allRewardDebt = allRewardDebt.sub(user.rewardDebt);
+            user.rewardDebt = user.amount.mul(accTokensPerShare);
+            allRewardDebt = allRewardDebt.add(user.rewardDebt);
+            allStakedAmount = allStakedAmount.sub(_amount);
+            sharedWalletStakedAmount = sharedWalletStakedAmount.sub(_amount);
+            emit StakeWithdrawn(_validator, _amount, pending);
+        }
+        deleteRequest(_validator);     
     }
 
     function transferPendingReward(UserInfo memory user) private returns (uint256) {

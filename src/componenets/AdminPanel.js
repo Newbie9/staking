@@ -65,6 +65,27 @@ function AdminPanel() {
         }
     };
 
+    const removeValidator = (userAdress) => {
+        //console.log(userAdress) 
+        if (blockchain.account != null) {
+            blockchain.stakingContract.methods
+                .removeValidator(userAdress)
+                .send({
+                    to: blockchain.stakingContract.address, // Smart Contract Adress
+                    from: blockchain.account,
+                })
+                .once("error", (err) => {
+                    console.log(err);
+                })
+                .then((receipt) => {
+                    //changeUserStatus(userAdress,'approved to stake')
+                });
+
+        } else {
+            console.log("you are not connected")
+        }
+    };
+
 
     const getData = () => {
         if (blockchain.account !== "" && blockchain.smartContract !== null) {
@@ -99,12 +120,22 @@ function AdminPanel() {
                             <Text style={{ textAlign: "center" }}>  <strong>{usersRequest.adress} </strong> </Text>
                             <Text style={{ textAlign: "center" }}>  {usersRequest.enodeAdress} </Text>
                             <Text style={{ textAlign: "center" }}>  <strong> Status:</strong> <strong>{usersRequest.status} </strong></Text>
-                            <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
-                                onClick={() => {
-                                    approveValidator(usersRequest.adress);
-                                }}>
-                                EnableToStake
-                            </Button>
+                            {usersRequest.status==="pending" ? (
+                                <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
+                                    onClick={() => {
+                                        approveValidator(usersRequest.adress);
+                                    }}>
+                                    Enable To Stake
+                                </Button>
+                            ):(
+                                <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
+                                    onClick={() => {
+                                        removeValidator(usersRequest.adress);
+                                    }}>
+                                    Remove Validator
+                                </Button>
+                            )}
+                            
                         </VStack>
                     );
                 })
