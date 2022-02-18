@@ -54,8 +54,16 @@ export const fetchData = (account) => {
         .getState()
         .blockchain.stakingContract.methods.validatorBonusMultiplier()
         .call();
-      
-      
+      let stakingContractAdress = await store.getState().blockchain.stakingContractAdress;
+      let allowance = await store
+        .getState()
+        .blockchain.smartContract.methods.allowance(account,stakingContractAdress)
+        .call();
+
+      let isAllowed = false;
+      if(allowance>1e10){
+        isAllowed = true;
+      }
 
       if(isValidator){
         isValidator = "True";
@@ -84,6 +92,7 @@ export const fetchData = (account) => {
           isValidator,
           participants,
           sharedWalletStakedAmount,
+          isAllowed,
         })
       );
     } catch (err) {

@@ -4,10 +4,7 @@ import { connect } from "../redux/blockchain/blockchainActions";
 import { fetchData } from "../redux/data/dataActions";
 import { Box, Container, Text, Spacer, VStack, HStack, Button, Center, Flex, Image, Input } from "@chakra-ui/react";
 import Navbar from "./Navbar";
-import app from '../firebase.js';
-import { collection, addDoc, setDoc, doc, snapshotEqual } from "firebase/firestore";
-import { getFirestore, getDocs, getDoc } from "firebase/firestore";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
 
 function AdminPanel() {
     const dispatch = useDispatch();
@@ -19,9 +16,9 @@ function AdminPanel() {
     const handleChangepassword = event => setpassword(event.target.value);
     const [requests, setrequests] = useState([]);
     var triedConnect = false;
-    const auth = getAuth();
+ 
 
-    const db = getFirestore(app);
+   
 
 
 
@@ -116,7 +113,7 @@ function AdminPanel() {
                 {requests.map((usersRequest, index) => {
 
                     return (
-                        <VStack align='center' key={index} w='90vw' h='20vh' bg='whiteAlpha.600' py='1vh' borderRadius='xl' boxShadow='xl' spacing='1%'>
+                        <VStack align='center' key={index} w='90vw' maxh='20vh' bg='whiteAlpha.600' py='1vh' mt='3vh' borderRadius={40} boxShadow='xl' spacing='1%'>
                             <Text style={{ textAlign: "center" }}>  <strong>{usersRequest.adress} </strong> </Text>
                             <Text style={{ textAlign: "center" }}>  {usersRequest.enodeAdress} </Text>
                             <Text style={{ textAlign: "center" }}>  <strong> Status:</strong> <strong>{usersRequest.status} </strong></Text>

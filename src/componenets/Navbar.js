@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Box, HStack, Image, Flex, Spacer } from '@chakra-ui/react'
+import { Box, HStack, Image, Flex, Spacer , Button, VStack, Text} from '@chakra-ui/react'
 import Logo from "../assets/images/website_logo.png"
 import { FaTwitter, FaTelegramPlane, FaDiscord } from "react-icons/fa"
 import { Icon } from '@chakra-ui/icons';
-
+import { connect } from "../redux/blockchain/blockchainActions";
+import { useDispatch, useSelector } from "react-redux";
 
 function Navbar() {
     const [click, setClick] = useState(false);
     const [button, setButton] = useState(true);
-
+    const dispatch = useDispatch();
     const handleClick = () => setClick(!click);
     const closeMobileMenu = () => setClick(false)
+    const blockchain = useSelector((state) => state.blockchain);
 
     const showButton = () => {
         if (window.innerWidth <= 960) {
@@ -29,15 +31,42 @@ function Navbar() {
     return (
         <div>
             <Flex
-                bg='yellow.500'
+                bgGradient='linear(to-b, gray.300, #F9A602)'
                 w='100%'
-                h='16vh'
-                spacing='auto'
-                
+                h='14vh'
+                spacing='auto'                
                 
             >
+                <a href="" >          
+                    <Image
+                        src={Logo}
+                        ml='3vw' 
+                        mt='3vh'              
+                        h='8vh'  
+                    />
+                </a>
+                <Box ml='30vw' mt = '3vh'>
+                    {blockchain.account === ""?(
+                        <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline" 
+                        onClick={() => {
+                        dispatch(connect())
+                        }}>
+                        connect
+                    </Button>
+                    ):(
+                        <VStack>
+                            <Text>Connected</Text>
+                            <Text>{blockchain.account}</Text>
+                        </VStack>
+                    )}
+                </Box>
+                
+                
                 <Spacer />
+                
                 <HStack >
+                    
+                    <Spacer />
                     <Box
                         align='center'
                         w='4vw'
@@ -47,7 +76,7 @@ function Navbar() {
                         borderRadius='xl'
                         _hover={{ borderRadius: 'xl', fontSize: '4xl' }}
                     >
-                        <a href='https://avaxfoxes.com/'>
+                        <a href=''>
                             <Icon as={FaTwitter} />
                         </a>
                     </Box>
@@ -60,7 +89,7 @@ function Navbar() {
                         borderRadius='xl'
                         _hover={{ borderRadius: 'xl', fontSize: '4xl' }}
                     >
-                        <a href='https://avaxfoxes.com/'>
+                        <a href=''>
                             <Icon as={FaTelegramPlane} />
                         </a>
                     </Box>
@@ -73,7 +102,7 @@ function Navbar() {
                         borderRadius='xl'
                         _hover={{ borderRadius: 'xl', fontSize: '4xl' }}
                     >
-                        <a href='https://avaxfoxes.com/'>
+                        <a href=''>
                             <Icon as={FaDiscord} />
                         </a>
                     </Box>

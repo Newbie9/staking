@@ -62,7 +62,7 @@ export const connect = () => {
         console.log(chainId);
         if (chainId=="0x4de") {       //0xa86a mainnetin chain id'si, 0xa869 fuji netin chain idsi
           const tokenContractAdress = "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd";
-          const stakingContractAdress = "0xEb20aD00A104021A9eAc45e0BE9e6fa380cDDe8D";
+          const stakingContractAdress = "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55";
           const TokenContractObj = new Web3EthContract(
             //SmartContract.abi,
             //NetworkData.address            
