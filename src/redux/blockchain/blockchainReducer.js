@@ -5,6 +5,7 @@ const initialState = {
   stakingContract: null,
   tokenContractAdress:null,
   stakingContractAdress: null,
+  chainId: null,
   web3: null,
   errorMsg: "",
 };
@@ -25,6 +26,7 @@ const blockchainReducer = (state = initialState, action) => {
         stakingContract: action.payload.stakingContract,
         tokenContractAdress:action.payload.tokenContractAdress,
         stakingContractAdress: action.payload.stakingContractAdress,
+        chainId: action.payload.chainId,
         web3: action.payload.web3,
       };
     case "CONNECTION_FAILED":

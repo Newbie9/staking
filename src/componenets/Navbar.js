@@ -55,13 +55,20 @@ function Navbar() {
                     </Button>
                     ):(
                         <div>
-                        {blockchain.account === blockchain.stakingContractAdress?(
+                        {blockchain.chainId===null?(
                             <Text>Please install Metamask</Text>
                         ):(
-                        <VStack>
-                            <Text>Connected</Text>
-                            <Text>{blockchain.account}</Text>
-                        </VStack>
+                            <div>
+                            {blockchain.chainId ?(
+                                <VStack>
+                                    <Text>Connected</Text>
+                                    <Text>{blockchain.account}</Text>
+                                </VStack>
+                            ):(
+                                <Text>Please change network to ONENG</Text>
+                            )}
+                            </div>
+                        
                         )}
                         </div>
                         

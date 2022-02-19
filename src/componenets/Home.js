@@ -130,15 +130,15 @@ function Home() {
           <Box w='50%' h='30vh' borderRadius={80} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} borderColor='#F9A602' borderWidth={'2px'} boxShadow='dark-lg'>
             <HStack>
               <VStack alignItems={'middle'} w='50%' mt='4%' ml='10%'>
-                {blockchain.account===null || data.isAllowed ===null ? (
+                {blockchain.account === null || data.isAllowed === null ? (
                   null
                 ) : (
                   <div>
                     {data.isAllowed ? (
                       <VStack alignItems={'center'} mt='15%'>
-                        <HStack  mb='10%'>
-                          <Input value={stakingAmount} onChange={handleChange} placeholder="Amount to Stake"  size="sm" borderRadius='20' bg='white.200' w={'50%'} x />
-                          <Button  size='sm' bg='alpha'
+                        <HStack mb='10%'>
+                          <Input value={stakingAmount} onChange={handleChange} placeholder="Amount to Stake" size="sm" borderRadius='20' bg='white.200' w={'50%'} x />
+                          <Button size='sm' bg='alpha'
                             _hover={{ bg: "alpha" }}
                             onClick={() => {
                               setstakingAmount(data.balanceof / 1e2);
@@ -146,8 +146,8 @@ function Home() {
                             Max
                           </Button>
                         </HStack>
-                        
-                        <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline" 
+
+                        <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
                           onClick={() => {
                             StakeSharedWallet()
                           }}>
@@ -183,32 +183,34 @@ function Home() {
                   </div>
                 )}
               </VStack>
-              <Spacer/>
+              <Spacer />
               <VStack w='50%'>
-                {blockchain.account===null || !data.loading || data.pendingReward===null?(
+                {blockchain.account === null || !data.loading || data.pendingReward === null ? (
                   null
-                ):(
+                ) : (
                   <div>
-                  <Text>User Staked Amount: {data.userInfo[0] / 1e2} ST</Text>
-                  <Text>Pending Reward: {data.pendingReward / 1e18} ONGCT</Text>
+                    <Text>User Staked Amount: {data.userInfo[0] / 1e2} ST</Text>
+                    <Text>Pending Reward: {data.pendingReward / 1e18} ONGCT</Text>
+                    <Text>Shared Wallet Staked Amount: {data.sharedWalletStakedAmount / 1e2} ST</Text>
+                    <Text>Number of Participants: {data.participants}</Text>
                   </div>
                 )}
-                
+
               </VStack>
             </HStack>
           </Box>
           <Box w='50%' h='30vh' borderRadius={80} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} borderColor='#F9A602' borderWidth={'2px'} boxShadow='dark-lg'>
             <HStack>
               <VStack alignItems={'middle'} w='50%' mt='4%' ml='10%'>
-                {blockchain.account===null || data.isAllowed ===null ? (
+                {blockchain.account === null || data.isAllowed === null ? (
                   null
                 ) : (
                   <div>
                     {data.isAllowed ? (
                       <VStack alignItems={'center'} mt='15%'>
-                        <HStack  mb='10%'>
-                          <Input value={stakingAmount2} onChange={handleChange2} placeholder="Amount to Stake"  size="sm" borderRadius='20' bg='white.200' w={'50%'} x />
-                          <Button  size='sm' bg='alpha'
+                        <HStack mb='10%'>
+                          <Input value={stakingAmount2} onChange={handleChange2} placeholder="Amount to Stake" size="sm" borderRadius='20' bg='white.200' w={'50%'} x />
+                          <Button size='sm' bg='alpha'
                             _hover={{ bg: "alpha" }}
                             onClick={() => {
                               setstakingAmount2(data.balanceof / 1e2);
@@ -216,8 +218,8 @@ function Home() {
                             Max
                           </Button>
                         </HStack>
-                        
-                        <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline" 
+
+                        <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
                           onClick={() => {
                             Stake()
                           }}>
@@ -253,41 +255,44 @@ function Home() {
                   </div>
                 )}
               </VStack>
-              <Spacer/>
+              <Spacer />
               <VStack w='50%'>
-                {blockchain.account===null || !data.loading || data.pendingReward===null?(
+                {blockchain.account === null || !data.loading || data.pendingReward === null ? (
                   null
-                ):(
+                ) : (
                   <div>
-                  <Text>User Staked Amount: {data.userInfo[0] / 1e2} ST</Text>
-                  <Text>Pending Reward: {data.pendingReward / 1e18} ONGCT</Text>
+                    <Text>User Staked Amount: {data.userInfo[0] / 1e2} ST</Text>
+                    <Text>Pending Reward: {data.pendingReward / 1e18} ONGCT</Text>
+                    <Text>Staked Amount: {(data.allStakedAmount - data.sharedWalletStakedAmount) / 1e2} ST</Text>
+                    <Text>Number of Participants: {data.participants}</Text>
                   </div>
                 )}
-                
+
               </VStack>
             </HStack>
           </Box>
           <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
             <VStack alignItems={'center'} mt='4%'>
               {blockchain.account === "" || blockchain.smartContract === null || data.userInfo === null ? (
-                null
+                <Text>Please install Metamask and connect to ONENG chain</Text>
               ) : (
-                <VStack>
-                  <Text>
-                    {blockchain.account}
-                  </Text>
-                  <Text>
-                    Balance: {data.balanceof / 1e2}
-                  </Text>
+                <div>
+                  {blockchain.chainID ? (
+                    <VStack>
+                      <Text>
+                        {blockchain.account}
+                      </Text>
+                      <Text>
+                        Balance: {data.balanceof / 1e2}
+                      </Text>
+                      <Text>Is Validator: {data.isValidator}</Text>
 
-                  <Text>Pending Reward: {data.pendingReward / 1e18}</Text>
-                  <Text>All Staked Amount: {data.allStakedAmount / 1e2}</Text>
-                  <Text>User Staked Amount: {data.userInfo[0] / 1e2}</Text>
-                  <Text>Is Validator: {data.isValidator}</Text>
-                  <Text>Number of Participants: {data.participants}</Text>
-                  <Text>Shared Wallet Staked Amount: {data.sharedWalletStakedAmount / 1e2}</Text>
+                    </VStack>
+                  ) : (
+                    <Text>Please install Metamask and connect to ONENG chain</Text>
+                  )}
+                </div>
 
-                </VStack>
 
               )}
 
@@ -298,7 +303,7 @@ function Home() {
           <VStack alignItems={'center'} mt='4%'>
             {!(Object.keys(usersRequest).length === 0) ? (
               <div>
-                <Text style={{ textAlign: "center" }}>  <strong>You have a request! </strong> </Text>                
+                <Text style={{ textAlign: "center" }}>  <strong>You have a request! </strong> </Text>
                 <Text style={{ textAlign: "center" }}>  Enode Adress: {usersRequest.enodeAdress} </Text>
                 <Text style={{ textAlign: "center" }}>  <strong> Status:</strong> <strong>{usersRequest.status} </strong></Text>
               </div>
