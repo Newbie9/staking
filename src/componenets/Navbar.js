@@ -46,7 +46,7 @@ function Navbar() {
                     />
                 </a>
                 <Box ml='30vw' mt = '3vh'>
-                    {blockchain.account === ""?(
+                    {blockchain.account === "" || blockchain.smartContract === null?(
                         <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline" 
                         onClick={() => {
                         dispatch(connect())

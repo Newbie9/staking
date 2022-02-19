@@ -95,7 +95,8 @@ export const connect = () => {
           });          
           // Add listeners end
         } else {
-          dispatch(connectFailed("Change network to Avalanche."));
+          
+          dispatch(connectFailed("Change network to ONENG."));
         }
       } catch (err) {
         dispatch(connectFailed("Something went wrong."));

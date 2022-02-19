@@ -124,7 +124,7 @@ function Home() {
   return (
     <div>
 
-      <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, gray.700)' >
+      <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, black)' >
         <VStack w='100%' mx={'5vw'} px={'5vw'} mt={'3%'}>
           <Box w='50%' h='30vh' borderRadius={80} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} borderColor='#F9A602' borderWidth={'2px'} boxShadow='dark-lg'>
             <HStack>

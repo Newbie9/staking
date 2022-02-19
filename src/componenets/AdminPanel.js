@@ -16,31 +16,38 @@ function AdminPanel() {
     const handleChangepassword = event => setpassword(event.target.value);
     const [requests, setrequests] = useState([]);
     var triedConnect = false;
- 
 
-   
+
+
 
 
 
     const getRequestsData = () => {
         if (blockchain.account != null) {
-        setrequests([]);
-        blockchain.stakingContract.methods.getRequestsLength().call()
-        .then((length)=>{
-            console.log(length)
-            for(let i=0;i<length;i++){
-                blockchain.stakingContract.methods.validators(i).call()
-                .then((request)=>{
-                    setrequests((prevState) => [
-                        ...prevState,
-                        { adress: request.user, enodeAdress: request.enodeAdress, status: request.status },
-                    ]);
+            blockchain.stakingContract.methods.owner().call()
+                .then((owner) => {
+                    if (blockchain.account == owner) {
+                        setrequests([]);
+                        blockchain.stakingContract.methods.getRequestsLength().call()
+                            .then((length) => {
+                                console.log(length)
+                                for (let i = 0; i < length; i++) {
+                                    blockchain.stakingContract.methods.validators(i).call()
+                                        .then((request) => {
+                                            setrequests((prevState) => [
+                                                ...prevState,
+                                                { adress: request.user, enodeAdress: request.enodeAdress, status: request.status },
+                                            ]);
+                                        })
+                                }
+                            })
+
+                    }
                 })
-            }    
-        })
+
         }
     };
-    
+
     const approveValidator = (userAdress) => {
         //console.log(userAdress) 
         if (blockchain.account != null) {
@@ -54,7 +61,7 @@ function AdminPanel() {
                     console.log(err);
                 })
                 .then((receipt) => {
-                    //changeUserStatus(userAdress,'approved to stake')
+                    getRequestsData();
                 });
 
         } else {
@@ -75,7 +82,7 @@ function AdminPanel() {
                     console.log(err);
                 })
                 .then((receipt) => {
-                    //changeUserStatus(userAdress,'approved to stake')
+                    getRequestsData();
                 });
 
         } else {
@@ -109,7 +116,7 @@ function AdminPanel() {
         <div>
 
             <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, gray.700)' >
-                
+
                 {requests.map((usersRequest, index) => {
 
                     return (
@@ -117,14 +124,14 @@ function AdminPanel() {
                             <Text style={{ textAlign: "center" }}>  <strong>{usersRequest.adress} </strong> </Text>
                             <Text style={{ textAlign: "center" }}>  {usersRequest.enodeAdress} </Text>
                             <Text style={{ textAlign: "center" }}>  <strong> Status:</strong> <strong>{usersRequest.status} </strong></Text>
-                            {usersRequest.status==="pending" ? (
+                            {usersRequest.status === "pending" ? (
                                 <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
                                     onClick={() => {
                                         approveValidator(usersRequest.adress);
                                     }}>
                                     Enable To Stake
                                 </Button>
-                            ):(
+                            ) : (
                                 <Button borderColor="black" borderRadius='20' boxShadow='lg' variant="outline"
                                     onClick={() => {
                                         removeValidator(usersRequest.adress);
@@ -132,7 +139,7 @@ function AdminPanel() {
                                     Remove Validator
                                 </Button>
                             )}
-                            
+
                         </VStack>
                     );
                 })
