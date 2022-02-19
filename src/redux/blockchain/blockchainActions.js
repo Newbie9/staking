@@ -102,7 +102,35 @@ export const connect = () => {
         dispatch(connectFailed("Something went wrong."));
       }
     } else {
-      dispatch(connectFailed("Install Metamask."));
+      console.log("metamask install")
+      let web3 = new Web3("https://testnet.oneng.network/");
+      const tokenContractAdress = "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd";
+      const stakingContractAdress = "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55";
+      const TokenContractObj = new web3.eth.Contract(
+        //SmartContract.abi,
+        //NetworkData.address            
+        TokenContract.abi,
+        tokenContractAdress
+      );
+      const StakingContractObj = new web3.eth.Contract(
+        //SmartContract.abi,
+        //NetworkData.address            
+        StakingContract.abi,
+        stakingContractAdress
+      );
+      console.log(StakingContractObj);
+      dispatch(
+        connectSuccess({
+          account: "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55",
+          smartContract: TokenContractObj,
+          stakingContract: StakingContractObj,
+          tokenContractAdress: tokenContractAdress,
+          stakingContractAdress: stakingContractAdress,
+          web3: web3,
+        })
+      );
+
+      //dispatch(connectFailed("Install Metamask."));
     }
   };
 };

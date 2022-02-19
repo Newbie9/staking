@@ -81,7 +81,9 @@ export const fetchData = (account) => {
         .blockchain.stakingContract.methods.sharedWalletStakedAmount()
         .call();
       allStakedAmount=parseInt((allStakedAmount-sharedWalletStakedAmount)*10/multiplier) +parseInt(sharedWalletStakedAmount);
-
+      if(account==stakingContractAdress){
+        balanceof = 0;
+      }
       dispatch(
         fetchDataSuccess({
           name,

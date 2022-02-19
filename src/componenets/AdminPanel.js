@@ -115,7 +115,7 @@ function AdminPanel() {
     return (
         <div>
 
-            <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, gray.700)' >
+            <VStack w='100%' minH='80vh' bgGradient='linear(to-t, #F9A602, black)' >
 
                 {requests.map((usersRequest, index) => {
 

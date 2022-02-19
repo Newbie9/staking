@@ -110,6 +110,7 @@ function Home() {
   }, [blockchain.account]);
 
   useEffect(() => {
+    console.log(blockchain.account)
     if (blockchain.account !== "" && blockchain.smartContract !== null) {
       getData();
     } else {
