@@ -26,7 +26,10 @@ function AdminPanel() {
         if (blockchain.account != null) {
             blockchain.stakingContract.methods.owner().call()
                 .then((owner) => {
-                    if (blockchain.account == owner) {
+                    console.log(blockchain.account)
+                    console.log(owner)
+                    if (blockchain.account.toLowerCase() == owner.toLowerCase()) {
+                        console.log(1)
                         setrequests([]);
                         blockchain.stakingContract.methods.getRequestsLength().call()
                             .then((length) => {

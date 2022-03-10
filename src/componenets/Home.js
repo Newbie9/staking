@@ -110,7 +110,7 @@ function Home() {
   }, [blockchain.account]);
 
   useEffect(() => {
-    console.log(blockchain.account)
+    //console.log(blockchain.chainId)
     if (blockchain.account !== "" && blockchain.smartContract !== null) {
       getData();
     } else {
@@ -273,11 +273,11 @@ function Home() {
           </Box>
           <Box w='30vw' h='30vh' bg='red' borderRadius={100} bgGradient='radial(#F9A602, white)' alignSelf={'middle'} >
             <VStack alignItems={'center'} mt='4%'>
-              {blockchain.account === "" || blockchain.smartContract === null || data.userInfo === null ? (
+              {blockchain.account === "" || blockchain.smartContract === null  ? (
                 <Text>Please install Metamask and connect to ONENG chain</Text>
               ) : (
                 <div>
-                  {blockchain.chainID ? (
+                  {blockchain.chainId ? (
                     <VStack>
                       <Text>
                         {blockchain.account}
@@ -289,7 +289,9 @@ function Home() {
 
                     </VStack>
                   ) : (
-                    <Text>Please install Metamask and connect to ONENG chain</Text>
+                    <div>
+                    <Text>Please connect to ONENG chain</Text>                    
+                    </div>
                   )}
                 </div>
 

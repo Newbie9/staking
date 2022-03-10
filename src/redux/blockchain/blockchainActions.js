@@ -60,22 +60,18 @@ export const connect = () => {
         //const NetworkData = await SmartContract.networks[networkId];
         const chainId = await ethereum.request({ method: 'eth_chainId' });
         console.log(chainId);
-        if (chainId=="0x4de") {       //0xa86a mainnetin chain id'si, 0xa869 fuji netin chain idsi
-          const tokenContractAdress = "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd";
-          const stakingContractAdress = "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55";
-          const TokenContractObj = new Web3EthContract(
-            //SmartContract.abi,
-            //NetworkData.address            
+        if (chainId=="0x542") {       //0xa86a mainnetin chain id'si, 0xa869 fuji netin chain idsi
+          const tokenContractAdress = "0x3118439bD7BE875eF35Fd34077d08573448769C4";
+          const stakingContractAdress = "0x3631146D53881D50a3a9793218E955afF54757EC";
+          const TokenContractObj = new Web3EthContract(                      
             TokenContract.abi,
             tokenContractAdress
           );
-          const StakingContractObj = new Web3EthContract(
-            //SmartContract.abi,
-            //NetworkData.address            
+          const StakingContractObj = new Web3EthContract(                    
             StakingContract.abi,
             stakingContractAdress
           );
-          console.log(StakingContractObj);
+          console.log(TokenContractObj);
           dispatch(
             connectSuccess({
               account: accounts[0],
@@ -95,11 +91,42 @@ export const connect = () => {
             window.location.reload();
           });          
           // Add listeners end
-        } else {
-
-          let web3 = new Web3("https://testnet.oneng.network/");
+        }else if(chainId=="0x4de"){
           const tokenContractAdress = "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd";
-          const stakingContractAdress = "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55";
+          const stakingContractAdress = "0x759b2B472Ae1D0B5b9C6452fD017f9C8FccF55D2";
+          const TokenContractObj = new Web3EthContract(                      
+            TokenContract.abi,
+            tokenContractAdress
+          );
+          const StakingContractObj = new Web3EthContract(                    
+            StakingContract.abi,
+            stakingContractAdress
+          );
+          console.log(TokenContractObj);
+          dispatch(
+            connectSuccess({
+              account: accounts[0],
+              smartContract: TokenContractObj,
+              stakingContract: StakingContractObj,
+              tokenContractAdress:tokenContractAdress,
+              stakingContractAdress: stakingContractAdress,
+              chainId: true,
+              web3: web3,
+            })
+          );
+          // Add listeners start
+          ethereum.on("accountsChanged", (accounts) => {
+            dispatch(updateAccount(accounts[0]));
+          });
+          ethereum.on("chainChanged", () => {
+            window.location.reload();
+          });
+        } 
+        else {
+
+          let web3 = new Web3("https://api.oneng.network");
+          const tokenContractAdress = "0x3118439bD7BE875eF35Fd34077d08573448769C4";
+          const stakingContractAdress = "0x3631146D53881D50a3a9793218E955afF54757EC";
           const TokenContractObj = new web3.eth.Contract(
             //SmartContract.abi,
             //NetworkData.address            
@@ -111,11 +138,11 @@ export const connect = () => {
             //NetworkData.address            
             StakingContract.abi,
             stakingContractAdress
-          );
-          console.log(StakingContractObj);
+          ); 
+          console.log("Wrong Chain");         
           dispatch(
             connectSuccess({
-              account: "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55",
+              account: "0x6E0d54B00baa5F7Be20f95e6c18Cf291b6f6A765",
               smartContract: TokenContractObj,
               stakingContract: StakingContractObj,
               tokenContractAdress: tokenContractAdress,
@@ -130,9 +157,9 @@ export const connect = () => {
       }
     } else {
       
-      let web3 = new Web3("https://testnet.oneng.network/");
-      const tokenContractAdress = "0x95C1A7F0640129F1Ab6c963EA706A7Ac9658fAcd";
-      const stakingContractAdress = "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55";
+      let web3 = new Web3("https://api.oneng.network");
+      const tokenContractAdress = "0x3118439bD7BE875eF35Fd34077d08573448769C4";
+          const stakingContractAdress = "0x3631146D53881D50a3a9793218E955afF54757EC";
       const TokenContractObj = new web3.eth.Contract(
         //SmartContract.abi,
         //NetworkData.address            
@@ -145,10 +172,10 @@ export const connect = () => {
         StakingContract.abi,
         stakingContractAdress
       );
-      console.log(StakingContractObj);
+      console.log("Metamask not Installed");
       dispatch(
         connectSuccess({
-          account: "0x5753B85aD01d60a3Cee2e0B694d6e99901618d55",
+          account: "0x6E0d54B00baa5F7Be20f95e6c18Cf291b6f6A765",
           smartContract: TokenContractObj,
           stakingContract: StakingContractObj,
           tokenContractAdress: tokenContractAdress,
