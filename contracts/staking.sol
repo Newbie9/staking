@@ -652,9 +652,8 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public stakingToken;    
-    uint256 public startTime;
     uint256 public lastRewardTime;
-    uint256 public finishTime;
+    uint256 public startTime=0;     
     uint256 public allStakedAmount;
     uint256 public allPaidReward;
     uint256 public allRewardDebt;
@@ -663,7 +662,7 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     uint256 public participants; //Count of participants
     uint256 public minAmountStake;
     uint256 public sharedWalletStakedAmount;
-    uint256 public validatorBonusMultiplier=15;
+    uint256 public validatorBonusMultiplier = 10;   
     // Info of each user.
     struct UserInfo {
         uint256 amount;     // How many tokens the user has staked.
@@ -671,8 +670,7 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         bool registrated;
         bool maderequest;
         uint256 index;
-    }
-    address public sharedWallet;
+    }    
     mapping (address => UserInfo) public userInfo;
     mapping (address => bool) public isValidator;
     mapping (address => bool) public canStake;
@@ -688,26 +686,14 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
     event HasWhitelistingUpdated(bool newValue);
 
     constructor(
-        IERC20 _stakingToken,
-        uint256 _startTime,
-        uint256 _finishTime,
-        uint256 _poolTokenAmount,
-        //bool _hasWhitelisting,
-        uint256 _minAmountStake
-        //address _sharedWallet
+        IERC20 _stakingToken,              
+        uint256 _minAmountStake        
     ) public Whitelist(false) {
-        stakingToken = _stakingToken;
-        
+        stakingToken = _stakingToken;        
         minAmountStake = _minAmountStake.mul(1e2);
-        startTime = block.timestamp.add(_startTime);        
-        lastRewardTime = startTime;
-        finishTime = block.timestamp.add(_finishTime);        
-        poolTokenAmount = _poolTokenAmount;
-        //sharedWallet = _sharedWallet;
-        require(startTime < finishTime, "Start must be less than finish");
-        require(startTime > block.timestamp, "Start must be more than now");
-
+        startTime = block.timestamp;
     }
+
     struct ValidatorInfo {
         address user;     // How many tokens the user has staked.
         string enodeAdress; // Reward debt
@@ -753,13 +739,18 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         validators.pop();        
     }
 
+    function setStartTime(uint256 _time) external onlyOwner{
+        if(_time==0){
+            startTime = block.timestamp;
+        }else{
+            startTime = _time;
+        }
+    }
+
     // in wei
     function rewardPerSec() internal view returns (uint256)
-    {
-        
-        if(block.timestamp<startTime){
-            return 0;
-        }else if(block.timestamp.sub(startTime)<1111111*15){
+    {        
+        if(block.timestamp.sub(startTime)<1111111*15){
             uint256 tempRPS = 25;
             return tempRPS.mul(1e18).div(15);
         }else{
@@ -785,13 +776,9 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         if (_from >= _to) {
           return 0;
         }
-        if (_to <= finishTime) {
+        else {
             return _to.sub(_from);
-        } else if (_from >= finishTime) {
-            return 0;
-        } else {
-            return finishTime.sub(_from);
-        }
+        } 
     }
 
     // View function to see pending Reward on frontend.
@@ -923,10 +910,6 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
             _amount = _amount.mul(10).div(validatorBonusMultiplier);
             user.amount = 0;
             stakingToken.safeTransfer(_validator, _amount);
-            
-            
-            canStake[_validator]=false;
-
             allRewardDebt = allRewardDebt.sub(user.rewardDebt);
             user.rewardDebt = user.amount.mul(accTokensPerShare);
             allRewardDebt = allRewardDebt.add(user.rewardDebt);
@@ -944,6 +927,7 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
             sharedWalletStakedAmount = sharedWalletStakedAmount.sub(_amount);
             emit StakeWithdrawn(_validator, _amount, pending);
         }
+        canStake[_validator]=false;
         deleteRequest(_validator);     
     }
 
@@ -988,8 +972,16 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         payable(msg.sender).transfer(address(this).balance);
         stakingToken.safeTransferFrom(address(this), msg.sender,  stakingToken.balanceOf(address(this)));
     }
-    function withdrawPoolRemainder() external onlyOwner nonReentrant{
-        require(block.timestamp > finishTime, "Allow after finish");
+
+    function emergencyWithdrawST(uint256 amount) external onlyOwner nonReentrant{        
+        stakingToken.safeTransferFrom(address(this), msg.sender,  amount);
+    }
+
+    function emergencyWithdrawOneng(uint256 amount) external onlyOwner nonReentrant{
+        payable(msg.sender).transfer(amount);        
+    }
+
+    function withdrawPoolRemainder() external onlyOwner nonReentrant{        
         updatePool();
         uint256 pending = allStakedAmount.mul(accTokensPerShare).sub(allRewardDebt);
         uint256 returnAmount = poolTokenAmount.sub(allPaidReward).sub(pending);
@@ -999,20 +991,4 @@ contract StakingPool is Ownable, Whitelist, ReentrancyGuard {
         payable(msg.sender).transfer(returnAmount);
         emit WithdrawPoolRemainder(msg.sender, returnAmount);
     }
-
-    
-    /*
-    function extendDuration(uint256 _addTokenAmount) external onlyOwner nonReentrant{
-        require(now < finishTime, "Pool was finished");
-        rewardToken.safeTransferFrom(msg.sender, address(this), _addTokenAmount);     
-        poolTokenAmount = poolTokenAmount.add(_addTokenAmount);
-        finishTime = finishTime.add(_addTokenAmount.div(rewardPerSec()));
-
-        emit UpdateFinishTime(_addTokenAmount, finishTime);
-    }*/
-
-    function setHasWhitelisting(bool value) external onlyOwner{
-        hasWhitelisting = value;
-        emit HasWhitelistingUpdated(hasWhitelisting);
-    }   
 }
